@@ -201,19 +201,33 @@ jobs:
             echo "Kalit allaqachon mavjud - shu kalit ishlatiladi."
           fi
 
-      - name: gradlew huquqi
-        run: chmod +x ./gradlew
+      - name: Gradle'ni to'g'ridan-to'g'ri o'rnatish (wrapper jar buzilgan holatlar uchun zaxira)
         working-directory: telegram-src
+        run: |
+          GRADLE_VERSION=$(grep -oE 'gradle-[0-9.]+-bin\.zip' gradle/wrapper/gradle-wrapper.properties | head -n1 | sed -E 's/gradle-([0-9.]+)-bin\.zip/\1/')
+          if [ -z "$GRADLE_VERSION" ]; then
+            echo "OGOHLANTIRISH: gradle-wrapper.properties'dan versiya topilmadi, 8.2 ishlatiladi"
+            GRADLE_VERSION="8.2"
+          fi
+          echo "Loyihaga kerakli Gradle versiyasi: $GRADLE_VERSION"
+          curl -sL --retry 3 -o /tmp/gradle.zip "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip"
+          if ! unzip -tq /tmp/gradle.zip > /dev/null 2>&1; then
+            echo "❌ Gradle distributivi yuklab olinmadi/buzilgan"
+            exit 1
+          fi
+          sudo unzip -q -o /tmp/gradle.zip -d /opt
+          echo "/opt/gradle-${GRADLE_VERSION}/bin" >> "$GITHUB_PATH"
+          echo "✅ Gradle ${GRADLE_VERSION} /opt ga o'rnatildi"
 
       - name: Mavjud build variantlarini ko'rsatish (diagnostika)
         run: |
           echo "=== TMessagesProj_App uchun mavjud 'assemble' vazifalari ==="
-          ./gradlew :TMessagesProj_App:tasks --all 2>&1 | grep -i assemble || echo "(topilmadi - modul nomi boshqacha bo'lishi mumkin)"
+          gradle :TMessagesProj_App:tasks --all 2>&1 | grep -i assemble || echo "(topilmadi - modul nomi boshqacha bo'lishi mumkin)"
         working-directory: telegram-src
         continue-on-error: true
 
       - name: APK yig'ish
-        run: ./gradlew :TMessagesProj_App:assembleAfatRelease --stacktrace
+        run: gradle :TMessagesProj_App:assembleAfatRelease --stacktrace
         working-directory: telegram-src
 
       - name: APK'ni topish
