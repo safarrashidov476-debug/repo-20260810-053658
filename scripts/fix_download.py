@@ -1,59 +1,86 @@
 #!/usr/bin/env python3
-"""
-Tiflogram: yuklash tugashi tovushi + Tiflogram papkasiga saqlash.
-Rejimlar: check / apply
-"""
-
+"""Tiflogram: yuklash tugashi tovushi."""
 import sys
-
 MODE = sys.argv[1] if len(sys.argv) > 1 else "check"
 
-FIXES = [
-    # --- Papka nomlari: Telegram -> Tiflogram OLIB TASHLANDI ---
-    # Sabab: bu 9 ta almashtirish ImageLoader.java faylidagi BARCHA
-    # "Telegram" nomlanishini qamrab olmaydi (masalan MediaStore/
-    # scoped-storage yo'llarida boshqacha yozilgan bo'lishi mumkin).
-    # Natijada bir joyda "Tiflogram", boshqa joyda hali "Telegram"
-    # kutiladi -> nomlar mos kelmay, ilova ishga tushishida cheksiz
-    # kutib, ~30 soniyadan keyin tizim tomonidan to'xtatiladi (ANR).
-    # Xavfsizlik uchun papka nomi asl "Telegram" holida qoldiriladi;
-    # faqat ilova nomi/brendi "Tiflogram" bo'lib qoladi (fix_branding.py).
-    # --- Yuklash tugashi: tovush + TalkBack ---
-    {
-        "id": 10,
-        "label": "DownloadController: fileLoaded -> tovush va ogohlantirish",
-        "path": "TMessagesProj/src/main/java/org/telegram/messenger/DownloadController.java",
-        "old": '''        } else if (id == NotificationCenter.fileLoaded || id == NotificationCenter.httpFileDidLoad) {
-            listenerInProgress = true;
-            String fileName = (String) args[0];''',
-        "new": '''        } else if (id == NotificationCenter.fileLoaded || id == NotificationCenter.httpFileDidLoad) {
-            listenerInProgress = true;
-            String fileName = (String) args[0];
-            // Tiflogram: tovush FAQAT foydalanuvchi o'zi boshlagan
-            // yuklamada chalinsin (avtomatik/fon yuklamalarida emas)
-            boolean tiflogramIsUserDownload = false;
-            for (int _i = 0; _i < downloadingFiles.size(); _i++) {
-                MessageObject _mo = downloadingFiles.get(_i);
-                if (_mo != null && _mo.getDocument() != null &&
-                        fileName.equals(FileLoader.getAttachFileName(_mo.getDocument()))) {
-                    tiflogramIsUserDownload = true;
-                    break;
-                }
-            }
-            if (tiflogramIsUserDownload) {
-                try {
-                    android.media.MediaPlayer mp = android.media.MediaPlayer.create(
-                            ApplicationLoader.applicationContext,
-                            org.telegram.messenger.R.raw.tiflogram_dl_done);
-                    if (mp != null) {
-                        mp.setOnCompletionListener(android.media.MediaPlayer::release);
-                        mp.start();
-                    }
-                } catch (Throwable ignore) {
-                }
-            }''',
-    },
-]
+FIXES = []
+
+FIXES.append({
+    "id": 10,
+    "label": "DownloadController: fileLoaded -> tovush",
+    "path": "TMessagesProj/src/main/java/org/telegram/messenger/DownloadController.java",
+    "old": (
+        "        } else if (id == NotificationCenter.fileLoaded || id == NotificationCenter.httpFileDidLoad) {\n"
+        "            listenerInProgress = true;\n"
+        "            String fileName = (String) args[0];"
+    ),
+    "new": (
+        "        } else if (id == NotificationCenter.fileLoaded || id == NotificationCenter.httpFileDidLoad) {\n"
+        "            listenerInProgress = true;\n"
+        "            String fileName = (String) args[0];\n"
+        "            // Tiflogram: foydalanuvchi yuklamasi tugaganda tovush\n"
+        "            boolean tiflogramIsUserDownload = false;\n"
+        "            try {\n"
+        "                for (int _i = 0; _i < downloadingFiles.size(); _i++) {\n"
+        "                    MessageObject _mo = downloadingFiles.get(_i);\n"
+        "                    if (_mo == null) continue;\n"
+        "                    String _fn = _mo.getFileName();\n"
+        "                    if (_fn != null && fileName != null && (_fn.equals(fileName) || fileName.endsWith(_fn))) {\n"
+        "                        tiflogramIsUserDownload = true;\n"
+        "                        break;\n"
+        "                    }\n"
+        "                    if (_mo.getDocument() != null) {\n"
+        "                        String _an = FileLoader.getAttachFileName(_mo.getDocument());\n"
+        "                        if (_an != null && _an.equals(fileName)) {\n"
+        "                            tiflogramIsUserDownload = true;\n"
+        "                            break;\n"
+        "                        }\n"
+        "                    }\n"
+        "                }\n"
+        "            } catch (Throwable ignore) {}\n"
+        "            if (tiflogramIsUserDownload) {\n"
+        "                try {\n"
+        "                    android.media.MediaPlayer mp = android.media.MediaPlayer.create(\n"
+        "                            ApplicationLoader.applicationContext,\n"
+        "                            org.telegram.messenger.R.raw.tiflogram_dl_done);\n"
+        "                    if (mp != null) {\n"
+        "                        mp.setOnCompletionListener(android.media.MediaPlayer::release);\n"
+        "                        mp.start();\n"
+        "                    }\n"
+        "                } catch (Throwable ignore) {}\n"
+        "            }"
+    ),
+})
+
+FIXES.append({
+    "id": 11,
+    "label": "DownloadController.onDownloadComplete -> tovush",
+    "path": "TMessagesProj/src/main/java/org/telegram/messenger/DownloadController.java",
+    "old": (
+        "    public void onDownloadComplete(MessageObject parentObject) {\n"
+        "        if (parentObject == null || parentObject.getDocument() == null) {\n"
+        "            return;\n"
+        "        }\n"
+        "        TLRPC.Document document = parentObject.getDocument();"
+    ),
+    "new": (
+        "    public void onDownloadComplete(MessageObject parentObject) {\n"
+        "        if (parentObject == null || parentObject.getDocument() == null) {\n"
+        "            return;\n"
+        "        }\n"
+        "        // Tiflogram: yuklash tugadi tovushi\n"
+        "        try {\n"
+        "            android.media.MediaPlayer mp = android.media.MediaPlayer.create(\n"
+        "                    ApplicationLoader.applicationContext,\n"
+        "                    org.telegram.messenger.R.raw.tiflogram_dl_done);\n"
+        "            if (mp != null) {\n"
+        "                mp.setOnCompletionListener(android.media.MediaPlayer::release);\n"
+        "                mp.start();\n"
+        "            }\n"
+        "        } catch (Throwable ignore) {}\n"
+        "        TLRPC.Document document = parentObject.getDocument();"
+    ),
+})
 
 
 def read_file(path):
@@ -66,50 +93,29 @@ def read_file(path):
 
 def main():
     if MODE not in ("check", "apply"):
-        print(f"Noma'lum rejim: {MODE}")
+        print("Noma'lum rejim:", MODE)
         sys.exit(1)
-
-    print(f"=== Rejim: {MODE} (yuklash papkasi + tovush) ===\n")
-    results = []
-    file_cache = {}
-
+    print("=== Rejim:", MODE, "(yuklash tovushi) ===\n")
+    hato = 0
     for fix in FIXES:
         path = fix["path"]
-        if path not in file_cache:
-            file_cache[path] = read_file(path)
-        content = file_cache[path]
+        content = read_file(path)
         if content is None:
-            print(f"❌ [{fix['id']}] {fix['label']} — fayl topilmadi")
-            results.append(False)
+            print("XATO fayl yo'q:", path)
+            hato = 1
             continue
         if fix["old"] not in content:
-            print(f"❌ [{fix['id']}] {fix['label']} — eski matn topilmadi")
-            results.append(False)
+            print("XATO topilmadi:", fix["label"])
+            hato = 1
             continue
-        print(f"✅ [{fix['id']}] {fix['label']}")
-        results.append(True)
-
-    failed = results.count(False)
-    print(f"\nOK: {len(results)-failed}/{len(results)}")
-    if MODE == "check":
-        sys.exit(1 if failed else 0)
-    if failed:
-        print("⛔ Hech narsa o'zgartirilmadi")
+        print("OK:", fix["label"])
+        if MODE == "apply":
+            content = content.replace(fix["old"], fix["new"], 1)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+    if hato:
         sys.exit(1)
-
-    modified = dict(file_cache)
-    for fix in FIXES:
-        path = fix["path"]
-        if fix.get("replace_all"):
-            modified[path] = modified[path].replace(fix["old"], fix["new"])
-        else:
-            modified[path] = modified[path].replace(fix["old"], fix["new"], 1)
-
-    for path, content in modified.items():
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
-        print(f"✅ Yozildi: {path}")
-    print("\n✅ Yuklash papkasi va tovush patchlari qo'llandi.")
+    print("Tayyor.")
 
 
 if __name__ == "__main__":

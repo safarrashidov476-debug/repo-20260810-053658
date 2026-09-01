@@ -431,14 +431,7 @@ FIXES.append({
                         if (buttonState == 1 && loadingProgressLayout != null) {
                             sb.append("\\n");
                             final boolean sending = currentMessageObject.isSending();
-                            // Tiflogram: bayt hajmi o'rniga foiz - xabar
-                            // tavsifining qolgan qismi bilan birga o'qiladi
-                            int tiflogramPercent = 0;
-                            if (lastLoadingSizeTotal > 0) {
-                                tiflogramPercent = Math.round(Math.max(0f, Math.min(1f,
-                                        (float) currentMessageObject.loadedFileSize / (float) lastLoadingSizeTotal)) * 100);
-                            }
-                            sb.append(String.valueOf(tiflogramPercent)).append(" foiz");
+                            // Tiflogram: foiz boshida (id 5b), bu yerda yo'q
                         }
                     }''',
 })
@@ -570,6 +563,28 @@ def main():
         print(f"✅ Yozildi: {path}")
 
     print("\n✅ Barcha tuzatishlar muvaffaqiyatli qo'llandi.")
+
+
+
+FIXES.append({
+    "id": "5b",
+    "label": "ChatMessageCell: foiz ENG BOSHIDA",
+    "path": "TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java",
+    "old": "                    SpannableStringBuilder sb = new SpannableStringBuilder();\n                    if (isChat && currentUser != null && !currentMessageObject.isOut()) {",
+    "new": (
+        "                    SpannableStringBuilder sb = new SpannableStringBuilder();\n"
+        "                    // Tiflogram: foiz eng boshida (fayl nomi va tavsifdan OLDIN)\n"
+        "                    try {\n"
+        "                        if (buttonState == 1 && loadingProgressLayout != null && lastLoadingSizeTotal > 0\n"
+        "                                && currentMessageObject != null && !currentMessageObject.isSending()) {\n"
+        "                            int tiflogramPercentPrepend = Math.round(Math.max(0f, Math.min(1f,\n"
+        "                                    (float) currentMessageObject.loadedFileSize / (float) lastLoadingSizeTotal)) * 100);\n"
+        "                            sb.append(String.valueOf(tiflogramPercentPrepend)).append(\" foiz. \");\n"
+        "                        }\n"
+        "                    } catch (Throwable ignore) {}\n"
+        "                    if (isChat && currentUser != null && !currentMessageObject.isOut()) {"
+    ),
+})
 
 
 if __name__ == "__main__":
