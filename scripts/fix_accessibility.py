@@ -418,7 +418,7 @@ FIXES.append({
     "id": 5,
     "label": "ChatMessageCell.java: yuklash foizi xabar tavsifida",
     "path": "TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java",
-    "old": '''                    if (documentAttach != null && (documentAttachType == DOCUMENT_ATTACH_TYPE_DOCUMENT || documentAttachType == DOCUMENT_ATTACH_TYPE_GIF || documentAttachType == DOCUMENT_ATTACH_TYPE_VIDEO)) {
+    "old": '''                    if (documentAttach != null && (documentAttachType == DOCUMENT_ATTACH_TYPE_DOCUMENT || documentAttachType == DOCUMENT_ATTACH_TYPE_GIF || documentAttachType == DOCUMENT_ATTACH_TYPE_VIDEO || documentAttachType == DOCUMENT_ATTACH_TYPE_AUDIO || documentAttachType == DOCUMENT_ATTACH_TYPE_MUSIC || documentAttachType == DOCUMENT_ATTACH_TYPE_ROUND || documentAttachType == DOCUMENT_ATTACH_TYPE_VOICE || documentAttachType == DOCUMENT_ATTACH_TYPE_STICKER)) {
                         if (buttonState == 1 && loadingProgressLayout != null) {
                             sb.append("\\n");
                             final boolean sending = currentMessageObject.isSending();
@@ -427,7 +427,7 @@ FIXES.append({
                             sb.append(formatString(key, resId, AndroidUtilities.formatFileSize(currentMessageObject.loadedFileSize), AndroidUtilities.formatFileSize(lastLoadingSizeTotal)));
                         }
                     }''',
-    "new": '''                    if (documentAttach != null && (documentAttachType == DOCUMENT_ATTACH_TYPE_DOCUMENT || documentAttachType == DOCUMENT_ATTACH_TYPE_GIF || documentAttachType == DOCUMENT_ATTACH_TYPE_VIDEO)) {
+    "new": '''                    if (documentAttach != null && (documentAttachType == DOCUMENT_ATTACH_TYPE_DOCUMENT || documentAttachType == DOCUMENT_ATTACH_TYPE_GIF || documentAttachType == DOCUMENT_ATTACH_TYPE_VIDEO || documentAttachType == DOCUMENT_ATTACH_TYPE_AUDIO || documentAttachType == DOCUMENT_ATTACH_TYPE_MUSIC || documentAttachType == DOCUMENT_ATTACH_TYPE_ROUND || documentAttachType == DOCUMENT_ATTACH_TYPE_VOICE || documentAttachType == DOCUMENT_ATTACH_TYPE_STICKER)) {
                         if (buttonState == 1 && loadingProgressLayout != null) {
                             sb.append("\\n");
                             final boolean sending = currentMessageObject.isSending();
@@ -575,7 +575,7 @@ FIXES.append({
         "                    SpannableStringBuilder sb = new SpannableStringBuilder();\n"
         "                    // Tiflogram: foiz eng boshida (fayl nomi va tavsifdan OLDIN)\n"
         "                    try {\n"
-        "                        if (buttonState == 1 && loadingProgressLayout != null && lastLoadingSizeTotal > 0\n"
+        "                        if (buttonState == 1 && lastLoadingSizeTotal > 0\n"
         "                                && currentMessageObject != null && !currentMessageObject.isSending()) {\n"
         "                            int tiflogramPercentPrepend = Math.round(Math.max(0f, Math.min(1f,\n"
         "                                    (float) currentMessageObject.loadedFileSize / (float) lastLoadingSizeTotal)) * 100);\n"

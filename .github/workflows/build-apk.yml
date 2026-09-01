@@ -113,8 +113,10 @@ jobs:
           cd telegram-src
           if [ -f ../my-files/assets/sound_in.wav ]; then
             cp ../my-files/assets/sound_in.wav TMessagesProj/src/main/res/raw/sound_in.wav
-            echo "sound_in.wav almashtirildi (custom xabar tovushi)"
-            ls -la TMessagesProj/src/main/res/raw/sound_in.wav
+            # chat ichidagi chiqish tovushi ham shu
+            cp ../my-files/assets/sound_in.wav TMessagesProj/src/main/res/raw/sound_out.wav
+            echo "sound_in/out.wav almashtirildi (custom xabar tovushi)"
+            ls -la TMessagesProj/src/main/res/raw/sound_in.wav TMessagesProj/src/main/res/raw/sound_out.wav
           else
             echo "OGOHLANTIRISH: assets/sound_in.wav topilmadi — standart tovush qoladi"
           fi
