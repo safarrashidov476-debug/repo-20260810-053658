@@ -410,31 +410,6 @@ FIXES.append({
 })
 
 
-# ---------------------------------------------------------------------
-# 5) ChatMessageCell.java - yuklash foizini xabar tavsifiga qo'shish
-#    (bayt hajmi o'rniga "X foiz" - butun tavsif bilan birga o'qiladi)
-# ---------------------------------------------------------------------
-FIXES.append({
-    "id": 5,
-    "label": "ChatMessageCell.java: yuklash foizi xabar tavsifida",
-    "path": "TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java",
-    "old": '''                    if (documentAttach != null && (documentAttachType == DOCUMENT_ATTACH_TYPE_DOCUMENT || documentAttachType == DOCUMENT_ATTACH_TYPE_GIF || documentAttachType == DOCUMENT_ATTACH_TYPE_VIDEO || documentAttachType == DOCUMENT_ATTACH_TYPE_AUDIO || documentAttachType == DOCUMENT_ATTACH_TYPE_MUSIC || documentAttachType == DOCUMENT_ATTACH_TYPE_ROUND || documentAttachType == DOCUMENT_ATTACH_TYPE_VOICE || documentAttachType == DOCUMENT_ATTACH_TYPE_STICKER)) {
-                        if (buttonState == 1 && loadingProgressLayout != null) {
-                            sb.append("\\n");
-                            final boolean sending = currentMessageObject.isSending();
-                            final String key = sending ? "AccDescrUploadProgress" : "AccDescrDownloadProgress";
-                            final int resId = sending ? R.string.AccDescrUploadProgress : R.string.AccDescrDownloadProgress;
-                            sb.append(formatString(key, resId, AndroidUtilities.formatFileSize(currentMessageObject.loadedFileSize), AndroidUtilities.formatFileSize(lastLoadingSizeTotal)));
-                        }
-                    }''',
-    "new": '''                    if (documentAttach != null && (documentAttachType == DOCUMENT_ATTACH_TYPE_DOCUMENT || documentAttachType == DOCUMENT_ATTACH_TYPE_GIF || documentAttachType == DOCUMENT_ATTACH_TYPE_VIDEO || documentAttachType == DOCUMENT_ATTACH_TYPE_AUDIO || documentAttachType == DOCUMENT_ATTACH_TYPE_MUSIC || documentAttachType == DOCUMENT_ATTACH_TYPE_ROUND || documentAttachType == DOCUMENT_ATTACH_TYPE_VOICE || documentAttachType == DOCUMENT_ATTACH_TYPE_STICKER)) {
-                        if (buttonState == 1 && loadingProgressLayout != null) {
-                            sb.append("\\n");
-                            final boolean sending = currentMessageObject.isSending();
-                            // Tiflogram: foiz boshida (id 5b), bu yerda yo'q
-                        }
-                    }''',
-})
 
 
 # ---------------------------------------------------------------------
