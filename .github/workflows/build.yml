@@ -1,16 +1,8 @@
 name: Build APK
-
-# Bu repo Tiflogram patchlari uchun — to'liq APK build-apk.yml orqali yig'iladi.
-# Ushbu workflow faqat qo'lda ishga tushiriladi va hech narsa qurmaydi (xato bermaslik uchun).
-
 on:
   workflow_dispatch:
-
 jobs:
   skip:
     runs-on: ubuntu-latest
     steps:
-      - name: Info
-        run: |
-          echo "Tiflogram APK uchun: Actions → 'Tiflogram - to\'liq APK yig\'ish' → Run workflow"
-          echo "Bu workflow o'chirilgan (patch-repo, gradle-wrapper kerak emas)."
+      - run: echo "O'chirilgan - APK uchun build-apk.yml ishlating"
