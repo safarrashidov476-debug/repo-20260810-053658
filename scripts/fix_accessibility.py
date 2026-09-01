@@ -113,43 +113,16 @@ FIXES.append({
 })
 
 # ---------------------------------------------------------------------
-# 3b) RadialProgress2.java - setProgress metodini kengaytirish
-#     Endi foiz HAR 1%DA e'lon qilinadi (avval 10% edi)
+# 3b) RadialProgress2.java - TalkBack API: stateDescription
 # ---------------------------------------------------------------------
 FIXES.append({
     "id": "3b",
-    "label": "RadialProgress2.java: foizni har 1%da ovozli aytish",
+    "label": "RadialProgress2: TalkBack stateDescription foiz",
     "path": "TMessagesProj/src/main/java/org/telegram/ui/Components/RadialProgress2.java",
-    "old": '''    public void setProgress(float value, boolean animated) {
-        if (drawMiniIcon) {
-            miniMediaActionDrawable.setProgress(value, animated);
-        } else {
-            mediaActionDrawable.setProgress(value, animated);
-        }
-    }''',
-    "new": '''    public void setProgress(float value, boolean animated) {
-        if (drawMiniIcon) {
-            miniMediaActionDrawable.setProgress(value, animated);
-        } else {
-            mediaActionDrawable.setProgress(value, animated);
-        }
-        // Tiflogram: foizni alohida, xabarni bo'ladigan e'lon bilan aytmaymiz.
-        // Buning o'rniga, xabar TalkBack fokusida bo'lsa, "kontent o'zgardi"
-        // signalini yuboramiz - shunda TalkBack xabarning TO'LIQ tavsifini
-        // (foiz + rasm/caption + qabul qilingan vaqt) birgalikda, bitta
-        // yaxlit gap sifatida qayta o'qiydi (ChatMessageCell ichida yig'iladi).
-        if (parent != null && parent.isAccessibilityFocused()) {
-            int percent = Math.round(Math.max(0f, Math.min(1f, value)) * 100);
-            if (percent != lastAnnouncedPercent && percent > 0 && percent < 100) {
-                lastAnnouncedPercent = percent;
-                parent.sendAccessibilityEvent(android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
-            }
-            // 100% da TalkBack aytmaydi — faqat tovush (DownloadController)
-        }
-    }''',
+    "old": '    public void setProgress(float value, boolean animated) {\n        if (drawMiniIcon) {\n            miniMediaActionDrawable.setProgress(value, animated);\n        } else {\n            mediaActionDrawable.setProgress(value, animated);\n        }\n    }',
+    "new": '    public void setProgress(float value, boolean animated) {\n        if (drawMiniIcon) {\n            miniMediaActionDrawable.setProgress(value, animated);\n        } else {\n            mediaActionDrawable.setProgress(value, animated);\n        }\n        if (parent == null) return;\n        try {\n            android.view.accessibility.AccessibilityManager am =\n                    (android.view.accessibility.AccessibilityManager)\n                            parent.getContext().getSystemService(android.content.Context.ACCESSIBILITY_SERVICE);\n            if (am == null || !am.isEnabled()) return;\n            int percent = Math.round(Math.max(0f, Math.min(1f, value)) * 100);\n            if (percent < 0) percent = 0;\n            if (percent > 100) percent = 100;\n            if (percent == lastAnnouncedPercent) return;\n            android.view.View focused = null;\n            android.view.View v = parent;\n            while (v != null) {\n                if (v.isAccessibilityFocused()) { focused = v; break; }\n                if (!(v.getParent() instanceof android.view.View)) break;\n                v = (android.view.View) v.getParent();\n            }\n            if (focused == null) return;\n            lastAnnouncedPercent = percent;\n            if (android.os.Build.VERSION.SDK_INT >= 30) {\n                if (percent > 0 && percent < 100) {\n                    focused.setStateDescription(percent + " foiz");\n                } else {\n                    focused.setStateDescription(null);\n                    lastAnnouncedPercent = -1;\n                }\n            }\n            focused.sendAccessibilityEvent(\n                    android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);\n        } catch (Throwable ignore) {}\n    }',
 })
 
-# ---------------------------------------------------------------------
 # 4a) ChatMessageCell.java - COMMENT elementini child ro'yxatidan olib tashlash
 # ---------------------------------------------------------------------
 FIXES.append({
@@ -550,7 +523,7 @@ FIXES.append({
         "                    SpannableStringBuilder sb = new SpannableStringBuilder();\n"
         "                    // Tiflogram: foiz eng boshida (fayl nomi va tavsifdan OLDIN)\n"
         "                    try {\n"
-        "                        if (buttonState == 1 && lastLoadingSizeTotal > 0\n"
+        "                        if ((buttonState == 1 || buttonState == 2) && lastLoadingSizeTotal > 0\n"
         "                                && currentMessageObject != null && !currentMessageObject.isSending()) {\n"
         "                            int tiflogramPercentPrepend = Math.round(Math.max(0f, Math.min(1f,\n"
         "                                    (float) currentMessageObject.loadedFileSize / (float) lastLoadingSizeTotal)) * 100);\n"
